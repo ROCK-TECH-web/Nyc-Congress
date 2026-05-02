@@ -534,14 +534,10 @@ async function doReg(){
     }
   } catch(error){
     console.error('Registration error:', error);
-    // Fallback to local registration if backend unavailable
-    regCount++;
-    const id=genID();
-    document.getElementById('rid').textContent=id;
-    document.getElementById('cem').textContent=registrationData.email;
-    document.getElementById('the-form').style.display='none';
-    document.getElementById('sbox').style.display='block';
-    updateCount();
+    alert('Registration failed. Please check that the server is running and try again.');
+    document.getElementById('btn-t').style.display='block';
+    document.getElementById('spin').style.display='none';
+    btn.disabled=false;
   }
 }
 

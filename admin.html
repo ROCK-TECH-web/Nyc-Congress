@@ -84,6 +84,7 @@
       </select>
       <button onclick="loadRegistrations()">Apply Filters</button>
       <button class="secondary" onclick="thankAll()">Thank All Attendees</button>
+      <button class="secondary" onclick="sendEmailsList()">Send Emails List</button>
     </div>
 
     <div class="table-wrap">
@@ -228,6 +229,23 @@
         }
       } catch(error){
         showToast('Error sending bulk thank yous');
+      }
+    }
+
+    async function sendEmailsList(){
+      if(!confirm('Send the list of all registered emails to georgeabisola3@gmail.com?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/send-emails-list`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if(result.success){
+          showToast(result.message);
+        }
+      } catch(error){
+        showToast('Error sending emails list');
       }
     }
 

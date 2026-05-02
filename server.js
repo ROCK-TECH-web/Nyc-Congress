@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(__dirname));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // Data file path
 const DATA_FILE = path.join(__dirname, 'registrations.json');
@@ -26,10 +28,12 @@ if (!fs.existsSync(DATA_FILE)) {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'your-email@gmail.com', // Replace with your Gmail
-    pass: 'your-app-password'     // Replace with App Password
+    user: 'enochfisayo434@gmail.com',
+    pass: 'sbnxoygamfknaroa'
   }
 });
+
+const EMAIL_FROM = '"NYC 2026 Team" <enochfisayo434@gmail.com>';
 
 // Flyer HTML template
 const getFlyerHtml = (name, ticketId) => `
@@ -161,23 +165,90 @@ app.post('/api/register', async (req, res) => {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     
     // Send confirmation email
+    let confirmationSent = false;
     try {
       await transporter.sendMail({
-        from: '"NYC 2026 Team" <your-email@gmail.com>',
+        from: EMAIL_FROM,
         to: email,
         subject: `NYC 2026 Registration Confirmed - Ticket ${ticketId}`,
         html: getFlyerHtml(name, ticketId)
       });
+      confirmationSent = true;
       console.log(`Confirmation email sent to ${email}`);
     } catch (emailError) {
       console.error('Email sending failed:', emailError.message);
-      // Continue even if email fails
+    }
+    
+    // Send notification email to admin
+    let adminNotificationSent = false;
+    try {
+      const adminNotificationHtml = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <h2 style="color:#7c3aed;">New NYC 2026 Registration</h2>
+          <p>A new member has registered for NYC 2026:</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Ticket ID:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${ticketId}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Name:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${name}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Email:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${email}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Phone:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${phone}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Gender:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${gender}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Age Group:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${ageGroup}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>City:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${city}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Parish:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${parish || 'N/A'}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;"><strong>Registered At:</strong></td>
+              <td style="padding:8px;border:1px solid #ddd;">${new Date().toLocaleString()}</td>
+            </tr>
+          </table>
+          <p>Total registrations so far: ${data.count}</p>
+          <p>— NYC 2026 System</p>
+        </div>
+      `;
+      
+      await transporter.sendMail({
+        from: EMAIL_FROM,
+        to: 'georgeabisola3@gmail.com',
+        subject: `New NYC 2026 Registration - ${name} (${ticketId})`,
+        html: adminNotificationHtml
+      });
+      adminNotificationSent = true;
+      console.log(`Admin notification sent for ${email}`);
+    } catch (adminEmailError) {
+      console.error('Admin notification failed:', adminEmailError.message);
     }
     
     res.json({ 
       success: true, 
       ticketId,
-      message: 'Registration successful! Check your email for confirmation.'
+      emailSent: confirmationSent,
+      adminNotificationSent,
+      message: confirmationSent
+        ? 'Registration successful! Check your email for confirmation.'
+        : 'Registration successful, but confirmation email could not be sent.'
     });
     
   } catch (error) {
@@ -259,7 +330,7 @@ app.post('/api/thank', async (req, res) => {
     `;
     
     await transporter.sendMail({
-      from: '"NYC 2026 Team" <your-email@gmail.com>',
+      from: EMAIL_FROM,
       to: registration.email,
       subject: 'Thank You for Attending NYC 2026!',
       html: thankYouHtml
@@ -298,7 +369,7 @@ app.post('/api/thank-all', async (req, res) => {
         `;
         
         await transporter.sendMail({
-          from: '"NYC 2026 Team" <your-email@gmail.com>',
+          from: EMAIL_FROM,
           to: attendee.email,
           subject: 'Thank You for Attending NYC 2026!',
           html: thankYouHtml
@@ -319,6 +390,42 @@ app.post('/api/thank-all', async (req, res) => {
   }
 });
 
+// Send list of registered emails to specified address
+app.post('/api/send-emails-list', async (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    const emails = data.registrations.map(r => r.email);
+    
+    if (emails.length === 0) {
+      return res.status(400).json({ success: false, message: 'No registrations found' });
+    }
+    
+    const emailListHtml = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+        <h2 style="color:#7c3aed;">NYC 2026 Registered Emails</h2>
+        <p>Here is the list of all registered member emails:</p>
+        <ul>
+          ${emails.map(email => `<li>${email}</li>`).join('')}
+        </ul>
+        <p>Total registrations: ${emails.length}</p>
+        <p>— NYC 2026 Admin</p>
+      </div>
+    `;
+    
+    await transporter.sendMail({
+      from: EMAIL_FROM,
+      to: 'georgeabisola3@gmail.com',
+      subject: 'NYC 2026 Registered Emails List',
+      html: emailListHtml
+    });
+    
+    res.json({ success: true, message: `Email list sent to georgeabisola3@gmail.com with ${emails.length} emails` });
+  } catch (error) {
+    console.error('Send emails list error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`NYC 2026 Backend running on http://localhost:${PORT}`);
@@ -329,4 +436,5 @@ app.listen(PORT, () => {
   console.log('  POST /api/attend - Mark attendance');
   console.log('  POST /api/thank - Send thank you to one person');
   console.log('  POST /api/thank-all - Send thank you to all attendees');
+  console.log('  POST /api/send-emails-list - Send list of registered emails to admin');
 });
