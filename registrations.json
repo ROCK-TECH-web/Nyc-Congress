@@ -1,44 +1,4 @@
 {
-  "registrations": [
-    {
-      "id": "NYC-001",
-      "name": "Inioluwa Heritage",
-      "email": "heritageinioluwa79@gmail.com",
-      "phone": "+2349159433288",
-      "gender": "Female",
-      "ageGroup": "16-20",
-      "city": "Ilaor",
-      "parish": "GDGS PARISH",
-      "registeredAt": "2026-05-02T21:01:35.728Z",
-      "attended": false,
-      "thanked": false
-    },
-    {
-      "id": "NYC-002",
-      "name": "enoch fisayo",
-      "email": "enochfisayo434@gmail.com",
-      "phone": "+2349052470834",
-      "gender": "Male",
-      "ageGroup": "16-20",
-      "city": "Ilaor",
-      "parish": "GDGS PARISH",
-      "registeredAt": "2026-05-02T21:04:33.293Z",
-      "attended": false,
-      "thanked": false
-    },
-    {
-      "id": "NYC-003",
-      "name": "enoch fisayo",
-      "email": "enochfisayo434@gmail.com",
-      "phone": "+2349052470834",
-      "gender": "Male",
-      "ageGroup": "16-20",
-      "city": "Ilaor",
-      "parish": "GDGS PARISH",
-      "registeredAt": "2026-05-02T21:18:17.886Z",
-      "attended": false,
-      "thanked": false
-    }
-  ],
-  "count": 3
+  "registrations": [],
+  "count": 0
 }

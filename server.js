@@ -5,6 +5,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const { google } = require('googleapis');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,14 @@ const transporter = nodemailer.createTransport({
 });
 
 const EMAIL_FROM = '"NYC 2026 Team" <enochfisayo434@gmail.com>';
+const ADMIN_EMAILS = ['georgeabisola3@gmail.com', 'olalekanolawale61@gmail.com'];
+
+const SPREADSHEET_ID = '1G_Bh3V6_D6aly7MY1ZtfqhfRPHdP7rixr0-sTmWXYik';
+const auth = new google.auth.GoogleAuth({
+  keyFile: './credentials.json', // Path to your service account key file
+  scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+});
+const sheets = google.sheets({ version: 'v4', auth });
 
 // Flyer HTML template
 const getFlyerHtml = (name, ticketId) => `
@@ -48,8 +57,8 @@ const getFlyerHtml = (name, ticketId) => `
   <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(124,58,237,0.15);">
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:40px 30px;text-align:center;">
-      <div style="width:80px;height:80px;background:#fff;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:32px;font-weight:900;color:#7c3aed;">NYC</span>
+      <div style="width:80px;height:80px;background:#000;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img src="cid:nyc-logo" alt="Logo" style="width:80px;height:80px;object-fit:contain;background:#000;border-radius:50%;display:block;border:none;outline:none;text-decoration:none;" />
       </div>
       <h1 style="color:#fff;font-size:28px;margin:0 0 8px;font-weight:900;">National Youth Congress 2026</h1>
       <p style="color:#ddd6fe;margin:0;font-size:14px;">"A New Beginning" · Rev 21:5</p>
@@ -60,7 +69,7 @@ const getFlyerHtml = (name, ticketId) => `
       <p style="font-size:16px;color:#1e1040;margin:0 0 24px;">Dear <strong>${name}</strong>,</p>
       
       <p style="font-size:15px;color:#6b7280;line-height:1.7;margin:0 0 24px;">
-        Your registration for <strong>National Youth Congress 2026</strong> has been confirmed! 
+        Your registration for <strong>CAMC National Youth Congress 2026</strong> has been confirmed! 
         We are thrilled to have you join us in Lagos for this life-transforming event.
       </p>
       
@@ -88,11 +97,34 @@ const getFlyerHtml = (name, ticketId) => `
           </tr>
           <tr>
             <td style="padding:8px 0;">
-              <span style="font-size:14px;">⏰</span> <strong>Time</strong>
+              <span style="font-size:14px;">⏰</span> <strong>FRI-Time</strong>
             </td>
-            <td style="padding:8px 0;text-align:right;color:#6b7280;font-size:14px;">4:00PM - 2:00PM</td>
+            <td style="padding:8px 0;text-align:right;color:#6b7280;font-size:14px;">4PM</td>
           </tr>
         </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+          <tr>
+            <td style="padding:12px;border:1px solid #ede9fe;border-radius:12px;background:#fff;color:#1e1040;font-size:14px;">FRI Event Details</td>
+          </tr>
+          <tr>
+            <td style="padding:12px;border:1px solid #ede9fe;border-radius:12px;background:#faf9ff;color:#6b7280;font-size:14px;">Worship, teaching, and prayer sessions</td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+          <tr>
+            <td style="padding:8px 0;">
+              <span style="font-size:14px;">⏰</span> <strong>SAT-Time</strong>
+            </td>
+            <td style="padding:8px 0;text-align:right;color:#6b7280;font-size:14px;">8:30AM</td>
+          </tr>
+        </table>
+        <table style="width:100%;border-collapse:collapse;margin-top:16px;">
+          <tr>
+            <td style="padding:12px;border:1px solid #ede9fe;border-radius:12px;background:#fff;color:#1e1040;font-size:14px;">FRI Event Details</td>
+          </tr>
+          <tr>
+            <td style="padding:12px;border:1px solid #ede9fe;border-radius:12px;background:#faf9ff;color:#6b7280;font-size:14px;">Morning Devotion, Worship, Business session, Question & Answer and prayer sessions</td>
+          </tr>
       </div>
       
       <p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0 0 24px;">
@@ -141,6 +173,11 @@ app.post('/api/register', async (req, res) => {
     // Read existing data
     const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
     
+    // Check if email already registered
+    if (data.registrations.some(r => r.email === email)) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+    
     // Generate ticket ID
     const ticketId = 'NYC-' + String(data.count + 1).padStart(3, '0');
     
@@ -164,14 +201,37 @@ app.post('/api/register', async (req, res) => {
     data.count++;
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     
+    // Append to Google Sheets
+    const values = [[ticketId, name, email, phone, gender, ageGroup, city, parish || '', new Date().toLocaleString()]];
+    try {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: 'Sheet1!A:I',
+        valueInputOption: 'RAW',
+        resource: { values },
+      });
+      console.log('Data appended to Google Sheet');
+    } catch (sheetError) {
+      console.error('Failed to append to Google Sheet:', sheetError.message);
+    }
+    
     // Send confirmation email
     let confirmationSent = false;
     try {
       await transporter.sendMail({
         from: EMAIL_FROM,
         to: email,
-        subject: `NYC 2026 Registration Confirmed - Ticket ${ticketId}`,
-        html: getFlyerHtml(name, ticketId)
+        subject: `CAMC NYC 2026 Registration Confirmed - Ticket ${ticketId}`,
+        html: getFlyerHtml(name, ticketId),
+        attachments: [
+          {
+            filename: 'logo.jpeg',
+            path: path.join(__dirname, 'logo.jpeg'),
+            cid: 'nyc-logo',
+            contentType: 'image/jpeg',
+            contentDisposition: 'inline'
+          }
+        ]
       });
       confirmationSent = true;
       console.log(`Confirmation email sent to ${email}`);
@@ -225,13 +285,14 @@ app.post('/api/register', async (req, res) => {
             </tr>
           </table>
           <p>Total registrations so far: ${data.count}</p>
+          <p>View the full list in our Google Sheet: <a href="https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}">Google Sheet</a></p>
           <p>— NYC 2026 System</p>
         </div>
       `;
       
       await transporter.sendMail({
         from: EMAIL_FROM,
-        to: 'georgeabisola3@gmail.com',
+        to: ADMIN_EMAILS.join(','),
         subject: `New NYC 2026 Registration - ${name} (${ticketId})`,
         html: adminNotificationHtml
       });
@@ -265,6 +326,11 @@ app.get('/api/registrations', (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
+});
+
+// Download registrations - redirect to Google Sheet
+app.get('/api/download-registrations', (req, res) => {
+  res.redirect(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`);
 });
 
 // Get registration stats
@@ -319,7 +385,7 @@ app.post('/api/thank', async (req, res) => {
     // Send thank you email
     const thankYouHtml = `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <h2 style="color:#7c3aed;">Thank You for Attending NYC 2026! 🎉</h2>
+        <h2 style="color:#7c3aed;">Thank You for Attending CAMC NYC 2026! 🎉</h2>
         <p>Dear <strong>${registration.name}</strong>,</p>
         <p>Thank you for being part of National Youth Congress 2026. Your presence made the event special!</p>
         <p>We pray that the encounters and revelations you received will transform your life.</p>
@@ -414,12 +480,12 @@ app.post('/api/send-emails-list', async (req, res) => {
     
     await transporter.sendMail({
       from: EMAIL_FROM,
-      to: 'georgeabisola3@gmail.com',
+      to: ADMIN_EMAILS.join(','),
       subject: 'NYC 2026 Registered Emails List',
       html: emailListHtml
     });
     
-    res.json({ success: true, message: `Email list sent to georgeabisola3@gmail.com with ${emails.length} emails` });
+    res.json({ success: true, message: `Email list sent to ${ADMIN_EMAILS.join(', ')} with ${emails.length} emails` });
   } catch (error) {
     console.error('Send emails list error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
