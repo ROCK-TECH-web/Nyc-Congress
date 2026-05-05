@@ -18,14 +18,6 @@ nav{background:rgba(255,255,255,0.97);border-bottom:1px solid #ede9fe;padding:0 
 .nav-links a{font-size:13px;color:#6b7280;text-decoration:none;cursor:pointer;font-weight:500}
 .nav-links a:hover{color:#7c3aed}
 .nav-cta{background:#7c3aed;border:none;border-radius:10px;padding:10px 22px;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
-.hamburger{display:none;background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer}
-
-/* Mobile Menu */
-.mobile-menu{position:fixed;top:68px;left:0;right:0;background:#fff;border-bottom:1px solid #ede9fe;padding:16px;display:none;z-index:99}
-.mobile-menu.show{display:block}
-.mobile-menu a{display:block;padding:12px 20px;color:#6b7280;text-decoration:none;border-bottom:1px solid #f3f4f6}
-.mobile-menu a:last-child{border-bottom:none}
-.mobile-menu a:hover{background:#f5f3ff;color:#7c3aed}
 
 .hero{background:#7c3aed;padding:60px 2rem 0;text-align:center;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .hero-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
@@ -96,14 +88,6 @@ nav{background:rgba(255,255,255,0.97);border-bottom:1px solid #ede9fe;padding:0 
 /* MINISTER */
 .minister-section{background:#1e1040;padding:64px 2rem}
 .minister-inner{max-width:860px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;gap:48px;align-items:center}
-@media(max-width:640px){
-  .minister-section{padding:40px 1rem}
-  .minister-inner{grid-template-columns:1fr;gap:24px;text-align:center}
-  .minister-photo-wrap{margin-bottom:8px}
-  .minister-photo{width:140px;height:140px;border-width:3px}
-  .minister-badge{margin:12px auto 0}
-  .minister-divider{margin:16px auto}
-}
 .minister-photo-wrap{position:relative}
 .minister-photo{width:220px;height:220px;border-radius:50%;object-fit:cover;object-position:top center;border:5px solid #7c3aed;display:block;margin:0 auto}
 .minister-badge{background:#7c3aed;border-radius:10px;padding:7px 16px;font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;text-align:center;margin-top:16px}
@@ -179,14 +163,10 @@ footer{background:#0f0820;padding:48px 2rem 28px;text-align:center}
 .fade-up.visible{opacity:1;transform:translateY(0)}
 @media(max-width:640px){
   .nav-links,.about-grid,.sched-grid,.fg-row,.minister-inner{display:block}
-  .nav-links{display:none}
-  .hamburger{display:block}
-  .nav-cta{display:none}
-  .form-box{padding:24px 18px}
-  .stat-i{padding:18px 20px}
   .minister-photo{width:160px;height:160px;margin-bottom:16px}
-  .minister-inner{grid-template-columns:1fr;text-align:center}
-  .minister-photo-wrap{margin-bottom:24px}
+  .stat-i{padding:18px 20px}
+  .form-box{padding:24px 18px}
+  .nav-text-sub{display:none}
 }
 </style>
 </head>
@@ -206,17 +186,8 @@ footer{background:#0f0820;padding:48px 2rem 28px;text-align:center}
     <a onclick="document.getElementById('minister').scrollIntoView({behavior:'smooth'})">Minister</a>
     <a onclick="document.getElementById('venue').scrollIntoView({behavior:'smooth'})">Venue</a>
   </div>
-  <button class="hamburger" onclick="toggleMenu()">☰</button>
-  <button class="nav-cta" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Register</button>
+  <button class="nav-cta" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Register Free</button>
 </nav>
-
-<div class="mobile-menu" id="mobile-menu">
-  <a onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'});toggleMenu()">About</a>
-  <a onclick="document.getElementById('flyer').scrollIntoView({behavior:'smooth'});toggleMenu()">Flyer</a>
-  <a onclick="document.getElementById('minister').scrollIntoView({behavior:'smooth'});toggleMenu()">Minister</a>
-  <a onclick="document.getElementById('venue').scrollIntoView({behavior:'smooth'});toggleMenu()">Venue</a>
-  <a onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'});toggleMenu()">Register Free</a>
-</div>
 
 <div class="hero">
   <div class="hero-particles" id="particles"></div>
@@ -252,9 +223,9 @@ footer{background:#0f0820;padding:48px 2rem 28px;text-align:center}
 </div>
 
 <div class="stats">
-  <div class="stat-i"><div class="stat-n">2k+</div><div class="stat-l">Expected attendees</div></div>
+  <div class="stat-i"><div class="stat-n">500+</div><div class="stat-l">Expected attendees</div></div>
   <div class="stat-i"><div class="stat-n">2</div><div class="stat-l">Days of power</div></div>
-  <div class="stat-i"><div class="stat-n" id="sr">1k+</div><div class="stat-l">Registered so far</div></div>
+  <div class="stat-i"><div class="stat-n" id="sr">0</div><div class="stat-l">Registered so far</div></div>
   <div class="stat-i"><div class="stat-n">10+</div><div class="stat-l">Ministers & speakers</div></div>
 </div>
 
@@ -300,7 +271,7 @@ footer{background:#0f0820;padding:48px 2rem 28px;text-align:center}
 <div id="minister" class="minister-section">
   <div class="minister-inner fade-up">
     <div class="minister-photo-wrap">
-      <img class="minister-photo" src="pic.jpeg" alt="General Overseer — Ministering at Youth Congress 2026"/>
+      <img class="minister-photo" src="data:image/jpeg;base64,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" alt="General Overseer — Ministering at Youth Congress 2026"/>
       <div class="minister-badge">Ministering</div>
     </div>
     <div>
@@ -400,12 +371,10 @@ footer{background:#0f0820;padding:48px 2rem 28px;text-align:center}
 
         <div class="fg-row">
           <div class="fg"><label>Gender *</label><select id="fg-s"><option value="">Select gender</option><option>Male</option><option>Female</option></select><div class="ferr" id="eg">Please select your gender</div></div>
-          <div class="fg"><label>Age Group *</label><select id="fa-s"><option value="">Select age group</option><option>16-20</option><option>21-25</option><option>26-30</option><option>31-35</option><option>36-40</option></select><div class="ferr" id="ea">Please select your age group</div></div>
+          <div class="fg"><label>City / State *</label><input type="text" id="fc" placeholder="e.g. Lagos, Nigeria"/><div class="ferr" id="ec">Enter your city or state</div></div>
         </div>
         
-        <div class="fg"><label>City / State *</label><input type="text" id="fc" placeholder="e.g. Lagos, Nigeria"/><div class="ferr" id="ec">Enter your city or state</div></div>
-        
-        <div class="fg"><label>Zone *<span class="opt"></span></label><input type="text" id="fo" placeholder="Sango Ota Zone"/></div>
+        <div class="fg"><label>Parish Name/Guest <span class="opt">(optional)</span></label><input type="text" id="fo" placeholder="Your Parish name"/></div>
         <button class="reg-btn" id="reg-btn" onclick="doReg()">
           <span id="btn-t">Complete My Registration</span>
           <div class="spinner" id="spin"></div>
@@ -475,7 +444,6 @@ function validate(){
    {id:'fe',err:'ee',fn:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)},
    {id:'fp',err:'ep',fn:v=>v.trim().length>6},
    {id:'fg-s',err:'eg',fn:v=>v!==''},
-   {id:'fa-s',err:'ea',fn:v=>v!==''},
    {id:'fc',err:'ec',fn:v=>v.trim().length>1}
   ].forEach(f=>{
     const el=document.getElementById(f.id);
@@ -487,58 +455,26 @@ function validate(){
 }
 
 function genID(){
-  return 'NYC-' + String(regCount + 1).padStart(3, '0');
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return 'YC2026-'+Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join('');
 }
 
-// Backend API URL - change to your server URL when deployed
-const API_URL = 'http://localhost:3000';
-
-async function doReg(){
+function doReg(){
   if(!validate())return;
   const btn=document.getElementById('reg-btn');
   document.getElementById('btn-t').style.display='none';
   document.getElementById('spin').style.display='block';
   btn.disabled=true;
-  
-  const registrationData = {
-    name: document.getElementById('fn').value.trim(),
-    email: document.getElementById('fe').value.trim(),
-    phone: document.getElementById('fp').value.trim(),
-    gender: document.getElementById('fg-s').value,
-    ageGroup: document.getElementById('fa-s').value,
-    city: document.getElementById('fc').value.trim(),
-    parish: document.getElementById('fo').value.trim()
-  };
-  
-  try {
-    const response = await fetch(`${API_URL}/api/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registrationData)
-    });
-    
-    const result = await response.json();
-    
-    if(result.success){
-      regCount++;
-      document.getElementById('rid').textContent=result.ticketId;
-      document.getElementById('cem').textContent=registrationData.email;
-      document.getElementById('the-form').style.display='none';
-      document.getElementById('sbox').style.display='block';
-      updateCount();
-    } else {
-      alert(result.message || 'Registration failed. Please try again.');
-      document.getElementById('btn-t').style.display='block';
-      document.getElementById('spin').style.display='none';
-      btn.disabled=false;
-    }
-  } catch(error){
-    console.error('Registration error:', error);
-    alert('Registration failed. Please check that the server is running and try again.');
-    document.getElementById('btn-t').style.display='block';
-    document.getElementById('spin').style.display='none';
-    btn.disabled=false;
-  }
+  setTimeout(()=>{
+    const id=genID();
+    const email=document.getElementById('fe').value;
+    document.getElementById('rid').textContent=id;
+    document.getElementById('cem').textContent=email;
+    document.getElementById('the-form').style.display='none';
+    document.getElementById('sbox').style.display='block';
+    regCount++;
+    updateCount();
+  },2000);
 }
 
 function resetForm(){
@@ -546,16 +482,10 @@ function resetForm(){
   document.getElementById('sbox').style.display='none';
   ['fn','fe','fp','fc','fo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fg-s').value='';
-  document.getElementById('fa-s').value='';
   const btn=document.getElementById('reg-btn');
   btn.disabled=false;
   document.getElementById('btn-t').style.display='block';
   document.getElementById('spin').style.display='none';
-}
-
-function toggleMenu(){
-  const menu=document.getElementById('mobile-menu');
-  menu.classList.toggle('show');
 }
 </script>
 </body>
